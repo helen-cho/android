@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -21,6 +22,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity {
     DBHelper helper;
@@ -75,6 +78,13 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
+            CircleImageView photo=view.findViewById(R.id.photo);
+            String strPhoto=cursor.getString(4);
+            if(strPhoto.equals("")){
+                photo.setImageResource(R.drawable.person1);
+            }else{
+                photo.setImageBitmap(BitmapFactory.decodeFile(strPhoto));
+            }
             TextView name=view.findViewById(R.id.name);
             name.setText(cursor.getString(1));
             TextView phone=view.findViewById(R.id.phone);
