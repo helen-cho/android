@@ -3,12 +3,14 @@ package com.example.ex03;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -30,6 +32,7 @@ import java.util.HashMap;
 public class KakaoActivity extends AppCompatActivity {
     ArrayList<HashMap<String,Object>> array=new ArrayList<>();
     BookAdapter adapter = new BookAdapter();
+    String query="자바";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +57,7 @@ public class KakaoActivity extends AppCompatActivity {
     class BookThread extends AsyncTask<String, String, String>{
         @Override
         protected String doInBackground(String... strings) {
-            String url="https://dapi.kakao.com/v3/search/book?target=title&query=자바";
+            String url="https://dapi.kakao.com/v3/search/book?target=title&query="+query;
             String result = KakaoAPI.connect(url);
             Log.i("result", result);
             return result;
@@ -127,5 +130,26 @@ public class KakaoActivity extends AppCompatActivity {
             }
             return item;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.kakao, menu);
+        SearchView searchView= (SearchView)menu.findItem(R.id.search).getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                query=s;
+                array.clear();
+                new BookThread().execute();
+                return false;
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
     }
 }//Activity
