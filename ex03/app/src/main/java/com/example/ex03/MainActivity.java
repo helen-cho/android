@@ -1,6 +1,7 @@
 package com.example.ex03;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     DBHelper helper;
     SQLiteDatabase db;
     MyAdpter adpter;
+    String sql="select _id, name, juso, phone, photo from address";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
 
         helper = new DBHelper(this);
         db = helper.getReadableDatabase();
-        String sql="select _id, name, juso, phone, photo from address";
 
         //데이터생성
         Cursor cursor=db.rawQuery(sql, null);
@@ -64,12 +66,39 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            int id = cursor.getInt(0);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent=new Intent(MainActivity.this, UpdateActivity.class);
+                    intent.putExtra("id", id);
+                    startActivity(intent);
+                }
+            });
             TextView name=view.findViewById(R.id.name);
             name.setText(cursor.getString(1));
             TextView phone=view.findViewById(R.id.phone);
             phone.setText(cursor.getString(3));
             TextView juso=view.findViewById(R.id.juso);
             juso.setText(cursor.getString(2));
+            view.findViewById(R.id.btnDelete).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder box=new AlertDialog.Builder(MainActivity.this);
+                    box.setTitle("질의");
+                    box.setMessage(id + "번 주소를 삭제하실래요?");
+                    box.setPositiveButton("예", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            String sql="delete from address where _id=" + id;
+                            db.execSQL(sql);
+                            onRestart();
+                        }
+                    });
+                    box.setNegativeButton("아니오", null);
+                    box.show();
+                }
+            });
         }
     }
 
@@ -79,5 +108,12 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Cursor cursor = db.rawQuery(sql, null);
+        adpter.changeCursor(cursor);
     }
 }//Activity
