@@ -54,6 +54,12 @@ public class UpdateActivity extends AppCompatActivity {
             name.setText(cursor.getString(1));
             juso.setText(cursor.getString(2));
             phone.setText(cursor.getString(3));
+            strPhoto = cursor.getString(4);
+            if(strPhoto.equals("")){
+                photo.setImageResource(R.drawable.person1);
+            }else{
+                photo.setImageBitmap(BitmapFactory.decodeFile(strPhoto));
+            }
         }
         getSupportActionBar().setTitle("정보수정:" + id);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
