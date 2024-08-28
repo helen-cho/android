@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -112,6 +113,7 @@ public class KakaoActivity extends AppCompatActivity {
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
             HashMap<String, Object> map=array.get(i);
+
             View item = getLayoutInflater().inflate(R.layout.item_book,viewGroup,false);
             TextView title=item.findViewById(R.id.title);
             title.setText(map.get("title").toString());
@@ -128,6 +130,33 @@ public class KakaoActivity extends AppCompatActivity {
             }else{
                 Picasso.with(KakaoActivity.this).load(strImage).into(image);
             }
+
+            item.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    View detail=View.inflate(KakaoActivity.this, R.layout.detail_book, null);
+                    TextView title=detail.findViewById(R.id.title);
+                    title.setText(map.get("title").toString());
+                    TextView price=detail.findViewById(R.id.price);
+                    price.setText(map.get("price").toString());
+                    TextView contents=detail.findViewById(R.id.contents);
+                    contents.setText(map.get("contents").toString());
+                    TextView authors=detail.findViewById(R.id.authors);
+                    authors.setText(map.get("authors").toString());
+                    ImageView image=detail.findViewById(R.id.image);
+                    String strImage = map.get("image").toString();
+                    if(strImage.equals("")){
+                        image.setImageResource(R.drawable.no_image);
+                    }else{
+                        Picasso.with(KakaoActivity.this).load(strImage).into(image);
+                    }
+                    AlertDialog.Builder box=new AlertDialog.Builder(KakaoActivity.this);
+                    box.setTitle("도서정보");
+                    box.setView(detail);
+                    box.setPositiveButton("확인", null);
+                    box.show();
+                }
+            });
             return item;
         }
     }
