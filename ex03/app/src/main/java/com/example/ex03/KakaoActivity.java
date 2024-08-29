@@ -1,5 +1,6 @@
 package com.example.ex03;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +30,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
@@ -34,6 +41,8 @@ public class KakaoActivity extends AppCompatActivity {
     ArrayList<HashMap<String,Object>> array=new ArrayList<>();
     BookAdapter adapter = new BookAdapter();
     String query="자바";
+    JSONArray documents = new JSONArray();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +85,7 @@ public class KakaoActivity extends AppCompatActivity {
     public void bookParser(String result){
         try{
             JSONArray jArray = new JSONObject(result).getJSONArray("documents");
+            documents = jArray;
             Log.i("size", jArray.length() + "");
             for(int i=0; i<jArray.length(); i++){
                 JSONObject obj=jArray.getJSONObject(i);
@@ -113,6 +123,12 @@ public class KakaoActivity extends AppCompatActivity {
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
             HashMap<String, Object> map=array.get(i);
+            try {
+                JSONObject doc = documents.getJSONObject(i);
+                Log.i("title", doc.getString("title"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
 
             View item = getLayoutInflater().inflate(R.layout.item_book,viewGroup,false);
             TextView title=item.findViewById(R.id.title);
@@ -157,6 +173,7 @@ public class KakaoActivity extends AppCompatActivity {
                     box.show();
                 }
             });
+
             return item;
         }
     }
