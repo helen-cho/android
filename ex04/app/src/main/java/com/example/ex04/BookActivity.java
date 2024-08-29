@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -93,29 +94,53 @@ public class BookActivity extends AppCompatActivity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            View item= getLayoutInflater().inflate(R.layout.item_book, viewGroup, false);
-            try {
+            View item= getLayoutInflater().inflate(R.layout.item_book, viewGroup,false);
+            try{
                 JSONObject obj = array.getJSONObject(i);
+                String strTitle = obj.getString("title");
+                String strPrice = obj.getString("sale_price");
+                String strImage = obj.getString("thumbnail");
+                String strAuthors = obj.getString("authors");
+                String strContents = obj.getString("contents");
                 TextView title=item.findViewById(R.id.title);
-                title.setText(obj.getString("title"));
-
+                title.setText(strTitle);
                 TextView price=item.findViewById(R.id.price);
-                int intPrice = obj.getInt("sale_price");
-                DecimalFormat df=new DecimalFormat("#,###원");
-                price.setText(df.format(intPrice));
-
-                String strImage =obj.getString("thumbnail");
-                ImageView image= item.findViewById(R.id.image);
+                price.setText(strPrice);
+                TextView authors=item.findViewById(R.id.authors);
+                authors.setText(strAuthors);
+                ImageView image=item.findViewById(R.id.image);
                 if(strImage.equals("")){
                     image.setImageResource(R.drawable.no_image);
-                }else {
+                }else{
                     Picasso.with(BookActivity.this).load(strImage).into(image);
                 }
-
-                TextView authors = item.findViewById(R.id.authors);
-                authors.setText(obj.getString("authors"));
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+                item.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View detail=getLayoutInflater().inflate(R.layout.detail_book, viewGroup,false);
+                        TextView title=detail.findViewById(R.id.title);
+                        title.setText(strTitle);
+                        TextView price=detail.findViewById(R.id.price);
+                        price.setText(strPrice);
+                        TextView contents=detail.findViewById(R.id.contents);
+                        contents.setText(strContents);
+                        TextView authors=detail.findViewById(R.id.authors);
+                        authors.setText(strAuthors);
+                        ImageView image=detail.findViewById(R.id.image);
+                        if(strImage.equals("")){
+                            image.setImageResource(R.drawable.no_image);
+                        }else{
+                            Picasso.with(BookActivity.this).load(strImage).into(image);
+                        }
+                        AlertDialog.Builder box=new AlertDialog.Builder(BookActivity.this);
+                        box.setTitle("도서정보");
+                        box.setView(detail);
+                        box.setPositiveButton("확인", null);
+                        box.show();
+                    }
+                });
+            }catch (Exception e){
+                Log.e("getView:", e.toString());
             }
             return item;
         }
