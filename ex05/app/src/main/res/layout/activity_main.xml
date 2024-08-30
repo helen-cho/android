@@ -7,6 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
     <include layout="@layout/view_drawer"/>
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="1"/>
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab"
+            android:layout_width="match_parent"
+            android:background="#FFC107"
+            android:layout_height="wrap_content"
+            app:tabTextColor="#FFFFFF"
+            app:tabIconTint="#FFFFFF"
+            app:tabIndicatorColor="#FFFFFF"
+            android:padding="5sp"/>
+    </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>
