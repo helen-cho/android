@@ -1,64 +1,128 @@
 package com.example.ex05;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BookFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class BookFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public BookFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment BookFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static BookFragment newInstance(String param1, String param2) {
-        BookFragment fragment = new BookFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
+    JSONArray array=new JSONArray();
+    BookAdapter adapter = new BookAdapter();
+    String query="자바";
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_book, container, false);
+        View view=inflater.inflate(R.layout.fragment_blog, container, false);
+        new BookThread().execute();
+        ListView list=view.findViewById(R.id.list);
+        list.setAdapter(adapter);
+
+        EditText edit = view.findViewById(R.id.query);
+        edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                query=edit.getText().toString();
+                new BookThread().execute();
+            }
+        });
+        return view;
     }
-}
+
+    class BookThread extends AsyncTask<String, String, String>{
+        @Override
+        protected String doInBackground(String... strings) {
+            if(query.equals("")) query="자바";
+            String url="https://dapi.kakao.com/v3/search/book?target=title&query=" + query;
+            String result = KakaoAPI.connect(url);
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            try {
+                array = new JSONObject(s).getJSONArray("documents");
+                adapter.notifyDataSetChanged();
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            super.onPostExecute(s);
+        }
+    }
+
+    class BookAdapter extends BaseAdapter{
+        @Override
+        public int getCount() {
+            return array.length();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            View item=getLayoutInflater().inflate(R.layout.item_book, viewGroup, false);
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                String strTitle=obj.getString("title");
+                String strImage=obj.getString("thumbnail");
+                String strPrice=obj.getString("sale_price");
+                String strAuthors=obj.getString("authors");
+                String strContents=obj.getString("contents");
+                TextView title=item.findViewById(R.id.title);
+                title.setText(strTitle);
+                TextView price=item.findViewById(R.id.price);
+                price.setText(strPrice);
+                TextView authors=item.findViewById(R.id.authors);
+                authors.setText(strAuthors);
+                ImageView image=item.findViewById(R.id.image);
+                if(strImage.equals("")) {
+                    image.setImageResource(R.drawable.no_image);
+                }else {
+                    Picasso.with(getActivity()).load(strImage).into(image);
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            return item;
+        }
+    }
+}//Flagment
