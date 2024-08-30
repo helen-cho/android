@@ -11,15 +11,21 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     LinearLayout drawerView;
     TabLayout tab;
     ViewPager pager;
+    ArrayList<Fragment> fragments=new ArrayList<Fragment>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("카카오검색");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.menu);
+
+        fragments.add(new BlogFragment());
+        fragments.add(new BookFragment());
+        fragments.add(new LocalFragment());
 
         drawerLayout=findViewById(R.id.drawerLayout);
         drawerView=findViewById(R.id.drawerView);
@@ -41,7 +51,24 @@ public class MainActivity extends AppCompatActivity {
         tab.getTabAt(1).setIcon(R.drawable.book);
         tab.addTab(tab.newTab().setText("지역"));
         tab.getTabAt(2).setIcon(R.drawable.local);
-    }
+
+        PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
+        pager.setAdapter(adapter);
+
+        tab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener(){
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                pager.setCurrentItem(tab.getPosition());
+            }
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
+        pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tab));
+    }//onCreate
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -54,4 +81,19 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-}
+
+    class PagerAdapter extends FragmentPagerAdapter{
+        public PagerAdapter(@NonNull FragmentManager fm) {
+            super(fm);
+        }
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+        @Override
+        public int getCount() {
+            return fragments.size();
+        }
+    }
+}//Activity
