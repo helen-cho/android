@@ -125,4 +125,4 @@ public class BookFragment extends Fragment {
             return item;
         }
     }
-}//Flagment
+}//Fragment
