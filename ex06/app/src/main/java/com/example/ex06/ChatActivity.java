@@ -2,11 +2,13 @@ package com.example.ex06;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,12 +41,14 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseDatabase db=FirebaseDatabase.getInstance();
     ArrayList<ChatVO> array=new ArrayList<>();
     ChatAdapter adapter = new ChatAdapter();
+    FirebaseUser user;
+    RecyclerView list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        FirebaseUser user=mAuth.getCurrentUser();
+        user=mAuth.getCurrentUser();
 
         getList();
 
@@ -76,7 +80,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        RecyclerView list=findViewById(R.id.list);
+        list=findViewById(R.id.list);
         list.setAdapter(adapter);
         list.setLayoutManager(new LinearLayoutManager(this));
     }//onCreate
@@ -97,7 +101,7 @@ public class ChatActivity extends AppCompatActivity {
                 ChatVO vo=snapshot.getValue(ChatVO.class);
                 array.add(vo);
                 adapter.notifyDataSetChanged();
-                //Log.i("size", array.size() + "");
+                list.scrollToPosition(array.size()-1);
             }
 
             @Override
@@ -134,6 +138,20 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ChatAdapter.ViewHolder holder, int position) {
             ChatVO vo = array.get(position);
+            LinearLayout.LayoutParams paramsContents=
+                    (LinearLayout.LayoutParams)holder.contents.getLayoutParams();
+            LinearLayout.LayoutParams paramsDate=
+                    (LinearLayout.LayoutParams)holder.date.getLayoutParams();
+
+            if(vo.getEmail().equals(user.getEmail())){
+                paramsContents.gravity= Gravity.RIGHT;
+                paramsDate.gravity=Gravity.RIGHT;
+                holder.email.setVisibility(View.INVISIBLE);
+            }else{
+                paramsContents.gravity=Gravity.LEFT;
+                paramsDate.gravity=Gravity.LEFT;
+                holder.email.setVisibility(View.VISIBLE);
+            }
             holder.email.setText(vo.getEmail());
             holder.date.setText(vo.getDate());
             holder.contents.setText(vo.getContents());
