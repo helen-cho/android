@@ -1,5 +1,6 @@
 package com.example.ex06;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -111,7 +113,14 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
+                ChatVO vo=snapshot.getValue(ChatVO.class);
+                for(ChatVO chat:array){
+                    if(chat.getKey().equals(vo.getKey())){
+                        array.remove(chat);
+                        break;
+                    }
+                }
+                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -155,6 +164,26 @@ public class ChatActivity extends AppCompatActivity {
             holder.email.setText(vo.getEmail());
             holder.date.setText(vo.getDate());
             holder.contents.setText(vo.getContents());
+
+            holder.contents.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if(vo.getEmail().equals(user.getEmail())){
+                        AlertDialog.Builder box=new AlertDialog.Builder(ChatActivity.this);
+                        box.setTitle("질의");
+                        box.setMessage("삭제하실래요?");
+                        box.setPositiveButton("예", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                db.getReference("chat/" + vo.getKey()).removeValue();
+                            }
+                        });
+                        box.setNegativeButton("아니오", null);
+                        box.show();
+                    }
+                    return false;
+                }
+            });
         }
 
         @Override
