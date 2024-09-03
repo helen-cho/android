@@ -4,29 +4,27 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class BlogFragment extends Fragment {
@@ -37,7 +35,7 @@ public class BlogFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_blog, container, false);
-        new BlogThread().execute();
+        //new BlogThread().execute();
         ListView list=view.findViewById(R.id.list);
         list.setAdapter(adapter);
 
@@ -53,11 +51,13 @@ public class BlogFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 query=edit.getText().toString();
-                new BlogThread().execute();
+                threadExecute();
             }
         });
+
+        threadExecute();
         return view;
-    }
+    }//onCreate
 
     class BlogThread extends AsyncTask<String, String, String>{
         @Override
@@ -119,5 +119,31 @@ public class BlogFragment extends Fragment {
             }
             return item;
         }
+    }
+
+    public  void threadExecute() {
+        ExecutorService executor= Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                //Background work here
+                if(query.equals("")) query="와인";
+                String url="https://dapi.kakao.com/v2/search/blog?query=" + query;
+                String result=KakaoAPI.connect(url);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //UI Thread work here
+                        try {
+                            array= new JSONObject(result).getJSONArray("documents");
+                            adapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        });
     }
 }//Fragment
