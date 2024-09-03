@@ -1,5 +1,6 @@
 package com.example.ex07;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,49 +29,52 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("로그인");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        //로그인하기
+
         email = findViewById(R.id.email);
-        pass=findViewById(R.id.pass);
-        
+        pass = findViewById(R.id.pass);
         findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String strEmail=email.getText().toString();
-                String strPass=pass.getText().toString();
+                String strEmail = email.getText().toString();
+                String strPass = pass.getText().toString();
                 mAuth.signInWithEmailAndPassword(strEmail, strPass)
-                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-                            Toast.makeText(LoginActivity.this,"로그인성공",Toast.LENGTH_SHORT).show();
-                            finish();
-                        }else{
-                            Toast.makeText(LoginActivity.this,"로그인실패",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-                findViewById(R.id.join).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String strEmail=email.getText().toString();
-                        String strPass=pass.getText().toString();
-                        mAuth.createUserWithEmailAndPassword(strEmail, strPass)
-                            .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if(task.isSuccessful()){
-                                        Toast.makeText(LoginActivity.this,"회원가입성공",Toast.LENGTH_SHORT).show();
-
-                                    }else{
-                                        Toast.makeText(LoginActivity.this,"회원가입실패",Toast.LENGTH_SHORT).show();
-                                    }
+                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if(task.isSuccessful()){
+                                    Toast.makeText(LoginActivity.this, "로그인성공", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }else{
+                                    Toast.makeText(LoginActivity.this, "로그인실패", Toast.LENGTH_SHORT).show();
                                 }
-                            });
-                    }
-                });
+                            }
+                        });
             }
-        });
-    }
+        });//로그인
+
+        findViewById(R.id.join).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String strEmail = email.getText().toString();
+                String strPass = pass.getText().toString();
+                mAuth.createUserWithEmailAndPassword(strEmail, strPass)
+                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if(task.isSuccessful()){
+                                    Toast.makeText(LoginActivity.this, "회원가입성공", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(LoginActivity.this, JoinActivity.class);
+                                    startActivity(intent);
+                                }else{
+                                    Toast.makeText(LoginActivity.this, "회원가입실패", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+            }
+        });//회원가입
+
+    }//creat
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
