@@ -7,6 +7,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -14,11 +18,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     RemoteService service;
     Retrofit retrofit;
     JSONArray array=new JSONArray();
+    WineAdapter adapter=new WineAdapter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +57,11 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         service=retrofit.create(RemoteService.class);
         getList();
+
+        RecyclerView list=findViewById(R.id.list);
+        list.setAdapter(adapter);
+        list.setLayoutManager(
+                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL));
     }//onCreate
 
     public void getList(){
@@ -55,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<HashMap<String, Object>>> call, Response<List<HashMap<String, Object>>> response) {
                 array=new JSONArray(response.body());
+                adapter.notifyDataSetChanged();
                 Log.i("size", array.length() + "");
             }
             @Override
@@ -80,4 +96,51 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-}
+
+    class WineAdapter extends RecyclerView.Adapter<WineAdapter.ViewHolder>{
+        @NonNull
+        @Override
+        public WineAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View item=getLayoutInflater().inflate(R.layout.item_wine,parent,false);
+            return new ViewHolder(item);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull WineAdapter.ViewHolder holder, int position) {
+            try {
+                JSONObject obj=array.getJSONObject(position);
+                String strImage=obj.getString("wine_image");
+                String strName=obj.getString("wine_name");
+                String strCountry=obj.getString("wine_country");
+                //String strPrice=obj.getString("wine_price");
+                String strType=obj.getString("wine_type");
+                holder.name.setText(strName);
+                holder.country.setText(strCountry);
+                //holder.price.setText(strPrice);
+                holder.type.setText(strType);
+                Picasso.with(MainActivity.this).load(strImage).into(holder.image);
+            } catch (JSONException e) {
+                Log.i("error", e.toString());
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return array.length();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder{
+            ImageView image;
+            TextView name, country, type, price;
+            public ViewHolder(@NonNull View itemView) {
+                super(itemView);
+                image=itemView.findViewById(R.id.image);
+                name=itemView.findViewById(R.id.name);
+                country=itemView.findViewById(R.id.country);
+                type=itemView.findViewById(R.id.type);
+                price=itemView.findViewById(R.id.price);
+            }
+        }
+    }//Adapter
+}//Activity
