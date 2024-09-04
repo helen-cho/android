@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseAuth mAuth=FirebaseAuth.getInstance();
     FirebaseUser user = mAuth.getCurrentUser();
     ArrayList<Fragment> framents=new ArrayList<Fragment>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +57,13 @@ public class MainActivity extends AppCompatActivity {
         tab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                pager.setCurrentItem(tab.getPosition());
+                if(user==null && tab.getPosition()>0){
+                    finish();
+                    Intent intent=new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }else{
+                    pager.setCurrentItem(tab.getPosition());
+                }
             }
 
             @Override
@@ -113,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         }else if(item.getItemId()==R.id.logout){
             mAuth.signOut();
             Toast.makeText(this, "로그아웃", Toast.LENGTH_SHORT).show();
-            Intent intent=getIntent();
+            Intent intent=new Intent(this, MainActivity.class);
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
