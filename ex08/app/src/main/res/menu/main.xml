@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/login"
         android:title="로그인"
+        android:id="@+id/login"
         android:icon="@drawable/login"
         app:showAsAction="always"/>
     <item
-        android:id="@+id/mypage"
-        android:title="마이페이지"
-        android:icon="@drawable/mypage"
+        android:title="로그아웃"
+        android:id="@+id/logout"
+        android:icon="@drawable/logout"
         app:showAsAction="always"/>
 </menu>

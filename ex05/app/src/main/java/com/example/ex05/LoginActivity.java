@@ -1,6 +1,8 @@
 package com.example.ex05;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -40,6 +42,9 @@ public class LoginActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if(task.isSuccessful()){
                                     Toast.makeText(LoginActivity.this,"성공",Toast.LENGTH_SHORT).show();
+                                    finish();
+                                    Intent intent=new Intent(LoginActivity.this, MainActivity.class);
+                                    startActivity(intent);
                                 }else{
                                     Toast.makeText(LoginActivity.this,"실패",Toast.LENGTH_SHORT).show();
                                 }
@@ -47,5 +52,13 @@ public class LoginActivity extends AppCompatActivity {
                         });
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId()==android.R.id.home){
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

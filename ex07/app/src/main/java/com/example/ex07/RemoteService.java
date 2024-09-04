@@ -1,14 +1,17 @@
 package com.example.ex07;
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 public interface RemoteService {
     public static final String BASE_URL="http://192.168.0.98:5000";
 
     @GET("/wine/list.json")
-    Call<List<HashMap<String,Object>>> list();
+    Call<HashMap<String,Object>> list(@Query("page") int page);
 }

@@ -12,12 +12,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -30,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,11 +34,13 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
+    FirebaseAuth mAuth = FirebaseAuth.getInstance();
     RemoteService service;
     Retrofit retrofit;
     JSONArray array=new JSONArray();
     WineAdapter adapter=new WineAdapter();
-
+    int total=0;
+    int page=1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,22 +57,42 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView list=findViewById(R.id.list);
         list.setAdapter(adapter);
-        list.setLayoutManager(
-                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL));
+        StaggeredGridLayoutManager manager=new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
+        list.setLayoutManager(manager);
+
+        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(total > array.length() && !list.canScrollVertically(1)){
+                    page++;
+                    getList();
+                }
+            }
+        });
     }//onCreate
 
     public void getList(){
-        Call<List<HashMap<String,Object>>> call=service.list();
-        call.enqueue(new Callback<List<HashMap<String, Object>>>() {
+        Call<HashMap<String, Object>> call=service.list(page);
+        call.enqueue(new Callback<HashMap<String, Object>>() {
             @Override
-            public void onResponse(Call<List<HashMap<String, Object>>> call, Response<List<HashMap<String, Object>>> response) {
-                array=new JSONArray(response.body());
-                adapter.notifyDataSetChanged();
-                Log.i("size", array.length() + "");
+            public void onResponse(Call<HashMap<String, Object>> call, Response<HashMap<String, Object>> response) {
+                try {
+                    JSONObject object = new JSONObject(response.body());
+                    total = object.getInt("total");
+                    JSONArray arr=object.getJSONArray("list");
+                    for(int i=0; i<arr.length(); i++){
+                        array.put(arr.getJSONObject(i));
+                    }
+                    adapter.notifyDataSetChanged();
+                }catch(Exception e){
+                    Log.i("getList", e.toString());
+                }
             }
+
             @Override
-            public void onFailure(Call<List<HashMap<String, Object>>> call, Throwable t) {
-                Log.e("error", t.toString());
+            public void onFailure(Call<HashMap<String, Object>> call, Throwable t) {
+
             }
         });
     }
@@ -91,10 +108,28 @@ public class MainActivity extends AppCompatActivity {
         if(item.getItemId()==android.R.id.home){
             finish();
         }else if(item.getItemId()==R.id.login){
+            finish();
             Intent intent=new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        }else if(item.getItemId()==R.id.mypage){
+            finish();
+            Intent intent=new Intent(this, JoinActivity.class);
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        FirebaseUser user=mAuth.getCurrentUser();
+        if(user == null){
+            menu.findItem(R.id.mypage).setVisible(false);
+            menu.findItem(R.id.login).setVisible(true);
+        }else{
+            menu.findItem(R.id.mypage).setVisible(true);
+            menu.findItem(R.id.login).setVisible(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     class WineAdapter extends RecyclerView.Adapter<WineAdapter.ViewHolder>{
@@ -109,11 +144,13 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull WineAdapter.ViewHolder holder, int position) {
             try {
                 JSONObject obj=array.getJSONObject(position);
+                int intIndex = obj.getInt("index");
                 String strImage=obj.getString("wine_image");
                 String strName=obj.getString("wine_name");
                 String strCountry=obj.getString("wine_country");
                 //String strPrice=obj.getString("wine_price");
                 String strType=obj.getString("wine_type");
+                holder.index.setText(String.valueOf(intIndex));
                 holder.name.setText(strName);
                 holder.country.setText(strCountry);
                 //holder.price.setText(strPrice);
@@ -132,9 +169,10 @@ public class MainActivity extends AppCompatActivity {
 
         class ViewHolder extends RecyclerView.ViewHolder{
             ImageView image;
-            TextView name, country, type, price;
+            TextView index, name, country, type, price;
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
+                index=itemView.findViewById(R.id.index);
                 image=itemView.findViewById(R.id.image);
                 name=itemView.findViewById(R.id.name);
                 country=itemView.findViewById(R.id.country);

@@ -1,6 +1,8 @@
 package com.example.ex05;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
@@ -17,10 +19,14 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    FirebaseUser user = mAuth.getCurrentUser();
     DrawerLayout drawerLayout;
     LinearLayout drawerView;
     TabLayout tab;
@@ -58,7 +64,13 @@ public class MainActivity extends AppCompatActivity {
         tab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener(){
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                pager.setCurrentItem(tab.getPosition());
+                if(user==null & tab.getPosition()==2){
+                    finish();
+                    Intent intent=new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }else {
+                    pager.setCurrentItem(tab.getPosition());
+                }
             }
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
