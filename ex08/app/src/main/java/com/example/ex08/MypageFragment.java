@@ -155,7 +155,7 @@ public class MypageFragment extends Fragment {
     }
 
     //사용자 정보읽기
-    public void readUserInfo(){
+    public void  readUserInfo(){
         db.collection("user")
         .document(user.getUid())
         .get()
@@ -167,8 +167,8 @@ public class MypageFragment extends Fragment {
                     name.setText(doc.getData().get("name").toString());
                     phone.setText(doc.getData().get("phone").toString());
                     address.setText(doc.getData().get("address").toString());
-                    if(doc.getData().get("photo")!=null){
-                        strPhoto = doc.getData().get("photo").toString();
+                    strPhoto = doc.getData().get("photo").toString();
+                    if(!strPhoto.equals("")){
                         Picasso.with(getActivity()).load(strPhoto).into(photo);
                     }
                 }
