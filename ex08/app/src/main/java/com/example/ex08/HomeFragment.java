@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -52,8 +53,27 @@ public class HomeFragment extends Fragment {
         RecyclerView list=view.findViewById(R.id.list);
         list.setAdapter(adapter);
         StaggeredGridLayoutManager manager=
-                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
+                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
         list.setLayoutManager(manager);
+
+        FloatingActionButton top=view.findViewById(R.id.top);
+        top.setVisibility(View.INVISIBLE);
+        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(!list.canScrollVertically(1)){
+                    top.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+        top.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                top.setVisibility(View.INVISIBLE);
+                list.scrollToPosition(0);
+            }
+        });
         return view;
     }//onCreateView
 
