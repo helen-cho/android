@@ -2,9 +2,11 @@ package com.example.ex08;
 
 import static com.example.ex08.RemoteService.BASE_URL;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -153,7 +155,15 @@ public class HomeFragment extends Fragment {
                         Toast.makeText(getActivity(),"등록성공!", Toast.LENGTH_SHORT).show();
                     }
                 });
-
+                //카드뷰를 클릭한 경우
+                holder.wine.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent=new Intent(getActivity(), ReadActivity.class);
+                        intent.putExtra("index", index);
+                        startActivity(intent);
+                    }
+                });
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -168,6 +178,7 @@ public class HomeFragment extends Fragment {
             ImageView image, cart;
             TextView name, type, country, price, index;
             RatingBar rating;
+            CardView wine;
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 cart = itemView.findViewById(R.id.cart);
@@ -178,6 +189,7 @@ public class HomeFragment extends Fragment {
                 price=itemView.findViewById(R.id.price);
                 rating=itemView.findViewById(R.id.rating);
                 index=itemView.findViewById(R.id.index);
+                wine=itemView.findViewById(R.id.wine);
             }
         }
     }

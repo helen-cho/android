@@ -5,7 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="10sp"
     app:cardCornerRadius="10sp"
-    app:cardBackgroundColor="#C9FDFCFD">
+    app:cardBackgroundColor="#C9FDFCFD"
+    android:id="@+id/wine">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
