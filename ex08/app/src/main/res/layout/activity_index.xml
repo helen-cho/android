@@ -2,29 +2,24 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".IndexActivity"
-    android:background="@drawable/bg_index">
-    <TextView
+    android:background="@drawable/background">
+    <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="최고의 음식점\n모두모아\n베스트푸드"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_marginRight="20sp"
-        android:layout_marginTop="80sp"
-        android:gravity="end"
-        android:layout_alignParentRight="true"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delicious"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:textSize="20sp"
+        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
+        android:indeterminateTint="#039BE5"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Happy day!"
+        android:textColor="#FFFFFF"
+        android:textSize="50sp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="30sp"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20sp"/>
 </RelativeLayout>

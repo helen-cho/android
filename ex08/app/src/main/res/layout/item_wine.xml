@@ -8,7 +8,7 @@
     app:cardBackgroundColor="#C9FDFCFD">
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="10sp">
         <ImageView
             android:id="@+id/image"
@@ -62,5 +62,12 @@
                 android:theme="@style/RatingBar"
                 android:layout_marginTop="20sp"/>
         </LinearLayout>
+        <ImageView
+            android:id="@+id/cart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/cart"
+            android:layout_alignParentRight="true"
+            android:layout_margin="20sp"/>
     </RelativeLayout>
 </androidx.cardview.widget.CardView>
