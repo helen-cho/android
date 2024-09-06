@@ -46,12 +46,15 @@ public class MypageFragment extends Fragment {
     FirebaseAuth mAuth=FirebaseAuth.getInstance();
     FirebaseFirestore db=FirebaseFirestore.getInstance();
     FirebaseUser user=mAuth.getCurrentUser();
-    EditText email, name,phone,address;
+
+    EditText email, name, phone,address;
     CircleImageView photo;
     String strFile="";
-    String strPhoto="";
+
     FirebaseStorage storage = FirebaseStorage.getInstance();
     ProgressBar progress;
+
+    UserVO vo=new UserVO();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -64,7 +67,8 @@ public class MypageFragment extends Fragment {
         photo = view.findViewById(R.id.photo);
         progress = view.findViewById(R.id.progress);
 
-        email.setText(user.getEmail());
+        vo.setEmail(user.getEmail());
+        email.setText(vo.getEmail());
         readUserInfo();
 
         view.findViewById(R.id.photo).setOnClickListener(new View.OnClickListener() {
@@ -85,12 +89,6 @@ public class MypageFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         //정보저장
-                        UserVO vo=new UserVO();
-                        vo.setEmail(email.getText().toString());
-                        vo.setName(name.getText().toString());
-                        vo.setPhone(phone.getText().toString());
-                        vo.setAddress(address.getText().toString());
-
                         if(!strFile.equals("")){
                             progress.setVisibility(View.VISIBLE);
                             String fileName=System.currentTimeMillis() + ".jpg";
@@ -103,14 +101,13 @@ public class MypageFragment extends Fragment {
                                         @Override
                                         public void onSuccess(Uri uri) {
                                             vo.setPhoto(uri.toString());
-                                            updateUserInfo(vo);
+                                            updateUserInfo();
                                         }
                                     });
                                 }
                             });
                         }else{
-                            vo.setPhoto(strPhoto);
-                            updateUserInfo(vo);
+                            updateUserInfo();
                         }
                     }
                 });
@@ -140,7 +137,10 @@ public class MypageFragment extends Fragment {
     );  //startActivityResult
 
     //사용자 정보수정
-    public void updateUserInfo(UserVO vo){
+    public void updateUserInfo(){
+        vo.setName(name.getText().toString());
+        vo.setPhone(phone.getText().toString());
+        vo.setAddress(address.getText().toString());
         db.collection("user")
             .document(user.getUid())
             .set(vo)
@@ -164,12 +164,17 @@ public class MypageFragment extends Fragment {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 DocumentSnapshot doc=task.getResult();
                 if(doc.getData() != null){
-                    name.setText(doc.getData().get("name").toString());
-                    phone.setText(doc.getData().get("phone").toString());
-                    address.setText(doc.getData().get("address").toString());
-                    strPhoto = doc.getData().get("photo").toString();
-                    if(!strPhoto.equals("")){
-                        Picasso.with(getActivity()).load(strPhoto).into(photo);
+                    vo.setName(doc.getData().get("name").toString());
+                    vo.setPhone(doc.getData().get("phone").toString());
+                    vo.setAddress(doc.getData().get("address").toString());
+
+                    name.setText(vo.getName());
+                    phone.setText(vo.getPhone());
+                    address.setText(vo.getAddress());
+
+                    if(doc.getData().get("photo")!=null){
+                        vo.setPhoto(doc.getData().get("photo").toString());
+                        Picasso.with(getActivity()).load(vo.getPhoto()).into(photo);
                     }
                 }
             }

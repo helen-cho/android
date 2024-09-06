@@ -5,8 +5,8 @@
     android:padding="5sp">
     <ImageView
         android:id="@+id/image"
-        android:layout_width="30sp"
-        android:layout_height="100sp"
+        android:layout_width="50sp"
+        android:layout_height="50sp"
         android:src="@drawable/background"/>
     <TextView
         android:id="@+id/name"
@@ -15,7 +15,8 @@
         android:text="여기는 상품이름"
         android:layout_toRightOf="@id/image"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="10sp"/>
+        android:layout_marginLeft="10sp"
+        android:lines="2"/>
     <ImageView
         android:id="@+id/delete"
         android:layout_width="wrap_content"
