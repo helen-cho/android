@@ -1,5 +1,6 @@
 package com.example.ex08;
 
+import android.Manifest;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -35,7 +36,7 @@ public class PermissionActivity extends AppCompatActivity {
         String[] permissions= {
                 android.Manifest.permission.READ_MEDIA_IMAGES,
                 android.Manifest.permission.READ_MEDIA_AUDIO,
-                android.Manifest.permission.READ_MEDIA_VIDEO
+                android.Manifest.permission.READ_MEDIA_VIDEO,
         };
         ArrayList<String> checkPermission = new ArrayList<>();
         for(String permission:permissions){

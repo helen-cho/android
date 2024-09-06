@@ -2,6 +2,8 @@ package com.example.ex08;
 
 import static android.app.Activity.RESULT_OK;
 
+import static androidx.browser.customtabs.CustomTabsClient.getPackageName;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -15,8 +17,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -111,6 +115,23 @@ public class MypageFragment extends Fragment {
             }
         });
 
+        //카메라 버튼을 클릭한 경우
+        view.findViewById(R.id.camera).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                    File file = File.createTempFile("img_", ".jpg", storageDir);
+                    strFile = file.getAbsolutePath();
+                    Uri uriFile= FileProvider.getUriForFile(getActivity(), getContext().getPackageName(), file);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uriFile);
+                    activityResultCamera.launch(intent);
+                }catch(Exception e){
+                    System.out.println("camera error:" + e.toString());
+                }
+            }
+        });
         return view;
     }//onCreateView
 
@@ -132,6 +153,19 @@ public class MypageFragment extends Fragment {
             }
         }
     );  //startActivityResult
+
+    //카메라 촬영후 
+    ActivityResultLauncher<Intent> activityResultCamera = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult o) {
+                    if(o.getResultCode() == RESULT_OK) {
+                        photo.setImageBitmap(BitmapFactory.decodeFile(strFile));
+                    }
+                }
+            }
+    );  //activityResultCamera
 
     public void updateUser(){
         vo.setName(name.getText().toString());
