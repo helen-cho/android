@@ -29,6 +29,22 @@
         app:civ_border_width="5sp"
         app:civ_border_color="#673AB7"
         android:layout_marginBottom="30sp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <Button
+            android:id="@+id/album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="앨범"
+            android:layout_marginRight="20sp"/>
+        <Button
+            android:id="@+id/camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="카메라"/>
+    </LinearLayout>
     <EditText
         android:id="@+id/email"
         android:layout_width="match_parent"

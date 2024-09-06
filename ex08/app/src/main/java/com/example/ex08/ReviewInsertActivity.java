@@ -29,14 +29,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ReviewInsertActivity extends AppCompatActivity {
-    FirebaseAuth mAuth=FirebaseAuth.getInstance();
-    FirebaseUser user=mAuth.getCurrentUser();
-    FirebaseFirestore db=FirebaseFirestore.getInstance();
-
-    int index;
-    TextView rating;
-    RatingBar rating_indicator;
-    EditText contents;
+    ReviewVO vo=new ReviewVO();
+    RatingBar ratingBar;
+    TextView contents, rating;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,42 +41,46 @@ public class ReviewInsertActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("리뷰쓰기");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        Intent intent=getIntent();
+        vo.setIndex(intent.getIntExtra("index", 0));
+        vo.setEmail(intent.getStringExtra("email"));
+
+        ratingBar=findViewById(R.id.ratingBar);
         rating=findViewById(R.id.rating);
-        rating_indicator=findViewById(R.id.ratingBar);
-        contents = findViewById(R.id.contents);
+        contents=findViewById(R.id.contents);
 
-        Intent intent = getIntent();
-        index=intent.getIntExtra("index", 0);
-
-        rating_indicator.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float v, boolean b) {
-                rating_indicator.setRating(v);
                 rating.setText(String.valueOf(v));
+                vo.setRating(v);
             }
         });
 
+        //등록버튼을 클릭한경우
         findViewById(R.id.insert).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(contents.equals("")) return;
-                ReviewVO vo=new ReviewVO();
-                vo.setEmail(user.getEmail());
-                vo.setIndex(index);
+                if(contents.getText().toString().equals("") || ratingBar.getRating()==0){
+                    Toast.makeText(ReviewInsertActivity.this,"내용과 평점을 입력하세요!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                //리뷰등록
                 vo.setContents(contents.getText().toString());
-                vo.setRating(rating_indicator.getRating());
-                Date date=new Date();
-                SimpleDateFormat sdf=new SimpleDateFormat("YYYY-MM-DD hh:mm:ss");
+                Date date = new Date();
+                SimpleDateFormat sdf=new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
                 vo.setDate(sdf.format(date));
-                db.collection("review").add(vo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if(task.isSuccessful()){
-                            Toast.makeText(ReviewInsertActivity.this, "등록완료!", Toast.LENGTH_SHORT).show();
-                            finish();
+                db.collection("review").add(vo)
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if(task.isSuccessful()){
+                                Toast.makeText(ReviewInsertActivity.this,
+                                        "리뷰등록성공!", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
                         }
-                    }
-                });
+                    });
             }
         });
     }

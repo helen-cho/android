@@ -43,45 +43,41 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ReadActivity extends AppCompatActivity {
     FirebaseAuth mAuth=FirebaseAuth.getInstance();
     FirebaseUser user=mAuth.getCurrentUser();
-    FirebaseFirestore db=FirebaseFirestore.getInstance();
-
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    ArrayList<ReviewVO> array=new ArrayList<>();
     Retrofit retrofit;
     RemoteService service;
-    ArrayList<ReviewVO> array=new ArrayList<>();
-    ReviewAdapter adapter = new ReviewAdapter();
+    ReivewAdapter adapter=new ReivewAdapter();
+    int index = 0;
 
-    int index=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read);
 
-        ImageView image=findViewById(R.id.image);
-        TextView name=findViewById(R.id.name);
-        TextView txtIndex=findViewById(R.id.index);
-        RatingBar ratingBar=findViewById(R.id.rating);
+        ImageView image = findViewById(R.id.image);
+        TextView name = findViewById(R.id.name);
+        TextView txtIndex = findViewById(R.id.index);
 
-        Intent intent=getIntent();
+        Intent intent = getIntent();
         index = intent.getIntExtra("index", 0);
-        getSupportActionBar().setTitle("와인정보: " + index);
+
+        getSupportActionBar().setTitle("와인상세정보" + index);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        retrofit=new Retrofit.Builder()
+        retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         service = retrofit.create(RemoteService.class);
-        Call<HashMap<String, Object>> call=service.read(index);
+        Call<HashMap<String, Object>> call = service.read(index);
         call.enqueue(new Callback<HashMap<String, Object>>() {
             @Override
             public void onResponse(Call<HashMap<String, Object>> call, Response<HashMap<String, Object>> response) {
-                HashMap<String,Object> vo=response.body();
+                HashMap<String,Object> vo =response.body();
                 name.setText(vo.get("wine_name").toString());
-                Picasso.with(ReadActivity.this)
-                        .load(vo.get("wine_image").toString()).into(image);
-                txtIndex.setText(index + "");
-                Float rating =Float.parseFloat(vo.get("rating").toString());
-                ratingBar.setRating(rating);
+                Picasso.with(ReadActivity.this).load(vo.get("wine_image").toString()).into(image);
+                txtIndex.setText(vo.get("index").toString());
             }
 
             @Override
@@ -90,19 +86,26 @@ public class ReadActivity extends AppCompatActivity {
             }
         });
 
+        //리뷰작성버튼을 클릭한 경우
         findViewById(R.id.write).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(ReadActivity.this, ReviewInsertActivity.class);
-                intent.putExtra("name", name.getText().toString());
-                intent.putExtra("index", index);
-                startActivity(intent);
+                if(user==null){
+                    Intent intent=new Intent(ReadActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }else {
+                    Intent intent = new Intent(ReadActivity.this, ReviewInsertActivity.class);
+                    intent.putExtra("index", index);
+                    intent.putExtra("email", user.getEmail());
+                    startActivity(intent);
+                }
             }
         });
+
         getList();
         ListView list=findViewById(R.id.list);
         list.setAdapter(adapter);
-    }
+    }//create
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -112,31 +115,32 @@ public class ReadActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //리뷰목록 읽기
     public void getList(){
         db.collection("review")
-                .whereEqualTo("index", index)
-                .orderBy("date", Query.Direction.DESCENDING)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        for(QueryDocumentSnapshot doc:task.getResult()){
-                            ReviewVO vo=new ReviewVO();
-                            vo.setId(doc.getId());
-                            vo.setEmail(doc.getData().get("email").toString());
-                            vo.setContents(doc.getData().get("contents").toString());
-                            vo.setDate(doc.getData().get("date").toString());
-                            float rating=Float.parseFloat(doc.getData().get("rating").toString());
-                            vo.setRating(rating);
-                            array.add(vo);
-                        }
-                        Log.i("size", array.size() + "");
-                        adapter.notifyDataSetChanged();
+            .whereEqualTo("index", index)
+            .orderBy("date", Query.Direction.DESCENDING)
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(QueryDocumentSnapshot doc:task.getResult()){
+                        ReviewVO vo=new ReviewVO();
+                        vo.setId(doc.getId());
+                        vo.setEmail(doc.getData().get("email").toString());
+                        vo.setContents(doc.getData().get("contents").toString());
+                        float rating=Float.parseFloat(doc.getData().get("rating").toString());
+                        vo.setRating(rating);
+                        vo.setDate(doc.getData().get("date").toString());
+                        array.add(vo);
                     }
-                });
+                    Log.i("size", array.size() + "");
+                    adapter.notifyDataSetChanged();
+                }
+            });
     }
 
-    class ReviewAdapter extends BaseAdapter{
+    class ReivewAdapter extends BaseAdapter{
         @Override
         public int getCount() {
             return array.size();
@@ -154,17 +158,17 @@ public class ReadActivity extends AppCompatActivity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            View item=getLayoutInflater().inflate(R.layout.item_review, viewGroup, false);
-            ReviewVO vo=array.get(i);
-            TextView email=item.findViewById(R.id.email);
-            TextView contents=item.findViewById(R.id.contents);
-            TextView date=item.findViewById(R.id.date);
+            view = getLayoutInflater().inflate(R.layout.item_review, viewGroup, false);
+            ReviewVO vo = array.get(i);
+            TextView email=view.findViewById(R.id.email);
             email.setText(vo.getEmail());
+            TextView contents=view.findViewById(R.id.contents);
             contents.setText(vo.getContents());
+            TextView date=view.findViewById(R.id.date);
             date.setText(vo.getDate());
-            RatingBar ratingBar=item.findViewById(R.id.ratingBar);
+            RatingBar ratingBar=view.findViewById(R.id.ratingBar);
             ratingBar.setRating(vo.getRating());
-            item.setOnClickListener(new View.OnClickListener() {
+            view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent=new Intent(ReadActivity.this, ReviewReadActivity.class);
@@ -172,7 +176,7 @@ public class ReadActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
-            return item;
+            return view;
         }
     }
 
@@ -182,4 +186,4 @@ public class ReadActivity extends AppCompatActivity {
         getList();
         super.onRestart();
     }
-}
+}//activity

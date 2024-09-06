@@ -21,6 +21,7 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -43,57 +44,44 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class MypageFragment extends Fragment {
-    FirebaseAuth mAuth=FirebaseAuth.getInstance();
-    FirebaseFirestore db=FirebaseFirestore.getInstance();
-    FirebaseUser user=mAuth.getCurrentUser();
+    FirebaseAuth auth=FirebaseAuth.getInstance();
+    FirebaseUser user=auth.getCurrentUser();
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    FirebaseStorage storage=FirebaseStorage.getInstance();
 
-    EditText email, name, phone,address;
+    EditText email, name, phone, address;
     CircleImageView photo;
+    UserVO vo = new UserVO();
     String strFile="";
 
-    FirebaseStorage storage = FirebaseStorage.getInstance();
-    ProgressBar progress;
-
-    UserVO vo=new UserVO();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_mypage, container, false);
 
-        email = view.findViewById(R.id.email);
-        name = view.findViewById(R.id.name);
-        phone = view.findViewById(R.id.phone);
-        address = view.findViewById(R.id.address);
-        photo = view.findViewById(R.id.photo);
-        progress = view.findViewById(R.id.progress);
+        email=view.findViewById(R.id.email);
+        name=view.findViewById(R.id.name);
+        phone=view.findViewById(R.id.phone);
+        photo=view.findViewById(R.id.photo);
+        address=view.findViewById(R.id.address);
 
+        email.setText(user.getEmail());
         vo.setEmail(user.getEmail());
-        email.setText(vo.getEmail());
-        readUserInfo();
-
-        view.findViewById(R.id.photo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityResult.launch(intent);
-            }
-        });
+        readUser();
 
         view.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder box=new AlertDialog.Builder(getActivity());
                 box.setTitle("질의");
-                box.setMessage("수정된 정보를 저장하실래요?");
+                box.setMessage("사용자정보를 수정하실래요?");
                 box.setPositiveButton("예", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        //정보저장
-                        if(!strFile.equals("")){
-                            progress.setVisibility(View.VISIBLE);
-                            String fileName=System.currentTimeMillis() + ".jpg";
+                        if(!strFile.equals("")) {
+                            String fileName = System.currentTimeMillis() + "/jpg";
+                            StorageReference ref = storage.getReference("/photos/" + fileName);
                             Uri file = Uri.fromFile(new File(strFile));
-                            StorageReference ref=storage.getReference("/photos/" + fileName);
                             ref.putFile(file).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -101,13 +89,13 @@ public class MypageFragment extends Fragment {
                                         @Override
                                         public void onSuccess(Uri uri) {
                                             vo.setPhoto(uri.toString());
-                                            updateUserInfo();
+                                            updateUser();
                                         }
                                     });
                                 }
                             });
                         }else{
-                            updateUserInfo();
+                            updateUser();
                         }
                     }
                 });
@@ -115,69 +103,77 @@ public class MypageFragment extends Fragment {
                 box.show();
             }
         });
+
+        //앨범 버튼 클릭시
+        view.findViewById(R.id.album).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityResult.launch(intent);
+            }
+        });
+
         return view;
     }//onCreateView
 
+
     //앨범에서 이미지 선택후
     ActivityResultLauncher<Intent> startActivityResult = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult o) {
-                    if(o.getResultCode() == RESULT_OK) {
-                        Cursor cursor=getActivity().getContentResolver().query(o.getData().getData(), null, null, null, null);
-                        cursor.moveToFirst();
-                        int index=cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-                        strFile = cursor.getString(index);
-                        photo.setImageBitmap(BitmapFactory.decodeFile(strFile));
-                        cursor.close();
-                    }
+        new ActivityResultContracts.StartActivityForResult(),
+        new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult o) {
+                if(o.getResultCode() == RESULT_OK) {
+                    Cursor cursor=getActivity().getContentResolver().query(o.getData().getData(), null, null, null, null);
+                    cursor.moveToFirst();
+                    int index=cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                    strFile = cursor.getString(index);
+                    photo.setImageBitmap(BitmapFactory.decodeFile(strFile));
+                    cursor.close();
                 }
             }
+        }
     );  //startActivityResult
 
-    //사용자 정보수정
-    public void updateUserInfo(){
+    public void updateUser(){
         vo.setName(name.getText().toString());
         vo.setPhone(phone.getText().toString());
         vo.setAddress(address.getText().toString());
         db.collection("user")
             .document(user.getUid())
             .set(vo)
-            .addOnSuccessListener(new OnSuccessListener<Void>() {
+            .addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
-                public void onSuccess(Void unused) {
-                    Toast.makeText(getActivity(),"수정완료!", Toast.LENGTH_SHORT).show();
-                    readUserInfo();
-                    progress.setVisibility(View.INVISIBLE);
+                public void onComplete(@NonNull Task<Void> task) {
+                    Toast.makeText(getActivity(), "수정완료", Toast.LENGTH_SHORT).show();
+                    readUser();
                 }
             });
     }
 
-    //사용자 정보읽기
-    public void  readUserInfo(){
+    public void readUser(){
         db.collection("user")
-        .document(user.getUid())
-        .get()
-        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                DocumentSnapshot doc=task.getResult();
-                if(doc.getData() != null){
-                    vo.setName(doc.getData().get("name").toString());
-                    vo.setPhone(doc.getData().get("phone").toString());
-                    vo.setAddress(doc.getData().get("address").toString());
+            .document(user.getUid())
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    DocumentSnapshot doc=task.getResult();
+                    if(doc.getData() != null){
+                        vo.setName(doc.getData().get("name").toString());
+                        vo.setPhone(doc.getData().get("phone").toString());
+                        vo.setAddress(doc.getData().get("address").toString());
 
-                    name.setText(vo.getName());
-                    phone.setText(vo.getPhone());
-                    address.setText(vo.getAddress());
+                        name.setText(vo.getName());
+                        phone.setText(vo.getPhone());
+                        address.setText(vo.getAddress());
 
-                    if(doc.getData().get("photo")!=null){
-                        vo.setPhoto(doc.getData().get("photo").toString());
-                        Picasso.with(getActivity()).load(vo.getPhoto()).into(photo);
+                        if(doc.getData().get("photo") != null) {
+                            vo.setPhoto(doc.getData().get("photo").toString());
+                            Picasso.with(getActivity()).load(vo.getPhoto()).into(photo);
+                        }
                     }
                 }
-            }
-        });
+            });
     }
 }//Fragment

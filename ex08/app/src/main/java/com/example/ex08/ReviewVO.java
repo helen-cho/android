@@ -3,7 +3,6 @@ package com.example.ex08;
 public class ReviewVO {
     private String id;
     private int index;
-    private String name;
     private String date;
     private float rating;
     private String contents;
@@ -23,14 +22,6 @@ public class ReviewVO {
 
     public void setIndex(int index) {
         this.index = index;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDate() {
